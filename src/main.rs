@@ -5,12 +5,7 @@ use postgres::{Connection, TlsMode};
 
 
 fn main() {
-    // Iniciando programa
-        println!("Bem vindo ao programa que vai te deixar mais organizado!");
-        println!("Primeiramente vamos precisar das credenciais para acessar o banco de dados PostgreSQL!");
-
     // Criando os links de acesso ao BD
-        //let link: String = get_db_credentials();
         let link = "postgresql://adilson:teste@localhost:5432/adilson";
         let connection = Connection::connect(link, TlsMode::None).unwrap();
 
@@ -22,15 +17,48 @@ fn main() {
 
         let show_tasks_query = "SELECT task FROM todolist";
 
+        let delete_task_query = "DELETE FROM todolist WHERE id = $1";
+
     // Executando as querys
         connection.execute(starter_query,&[]).unwrap();
-    
-        //let resultado = connection.query(query,&[]);
-        for i in &connection.query(show_tasks_query,&[]).unwrap(){
-            let row:String = i.get("task");
-            println!("{}",row);
-        }
 
+    // Main Task
+        // Boas vindas do programa
+            println!("Bem vindo ao programa que vai te deixar mais organizado!");
+            println!("Primeiramente vamos precisar das credenciais para acessar o banco de dados PostgreSQL!");
+            let mut user_answer:i8;
+        // Loop principal
+            loop {
+                user_answer = application_menu();
+
+                if(user_answer == 1){
+                    // Imprimindo todas as linhas resultadas da consulta SQL ao banco
+                    for i in &connection.query(show_tasks_query,&[]).unwrap(){
+                        let row:String = i.get("task");
+                        println!("{}", row);
+                    }
+                }
+
+                if(user_answer == 2){
+
+                }
+
+                if(user_answer == 3){
+                    // Perguntando ao usuário o índice da tarefa a ser excluída
+                        println!("Insira o índice a ser excluído:");
+                        let del_index_row:u32= read!();
+                        let result = connection.execute(delete_task_query,&[&del_index_row]).unwrap();
+                    // Informando linha alterada
+
+                }
+
+                if(user_answer == 4){
+                    connection.finish();
+                    break;
+                }
+            }
+
+    println!("Obrigado por utilizar o programa!")
 }
 fn get_db_credentials() -> String{
     // Definição das variáveis
