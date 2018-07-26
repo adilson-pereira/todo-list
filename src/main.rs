@@ -5,9 +5,6 @@ use postgres::{Connection, TlsMode};
 
 
 fn main() {
-    // Criando os links de acesso ao BD
-        let link = "postgresql://adilson:teste@localhost:5432/adilson";
-        let connection = Connection::connect(link, TlsMode::None).unwrap();
 
     // Criando querys que serão utilizadas
 
@@ -19,14 +16,20 @@ fn main() {
 
         let delete_task_query = "DELETE FROM todolist WHERE id = $1";
 
-    // Executando as querys
-        connection.execute(starter_query,&[]).unwrap();
+        let insert_task_query = "INSERT INTO todolist (task) VALUES ($1)";
+
+
 
     // Main Task
         // Boas vindas do programa
             println!("Bem vindo ao programa que vai te deixar mais organizado!");
             println!("Primeiramente vamos precisar das credenciais para acessar o banco de dados PostgreSQL!");
             let mut user_answer:i8;
+        // Criando os links de acesso ao BD
+            let link = get_db_credentials();
+            let connection = Connection::connect(link, TlsMode::None).unwrap();
+        // Executando as querys
+            connection.execute(starter_query,&[]).unwrap();
         // Loop principal
             loop {
                 user_answer = application_menu();
@@ -40,14 +43,17 @@ fn main() {
                 }
 
                 if(user_answer == 2){
+                    println!("Insira a nova tarefa que deve ser realizada:");
+                    let insert_task:String = read!();
+                    connection.execute(insert_task_query,&[&insert_task]).unwrap();
 
                 }
 
                 if(user_answer == 3){
                     // Perguntando ao usuário o índice da tarefa a ser excluída
                         println!("Insira o índice a ser excluído:");
-                        let del_index_row:u32= read!();
-                        let result = connection.execute(delete_task_query,&[&del_index_row]).unwrap();
+                        let del_index_row:i32= read!();
+                        connection.execute(delete_task_query,&[&del_index_row]).unwrap();
                     // Informando linha alterada
 
                 }
@@ -56,10 +62,13 @@ fn main() {
                     connection.finish();
                     break;
                 }
-            }
 
-    println!("Obrigado por utilizar o programa!")
+            }
+    println!("Obrigado por utilizar o programa!");
 }
+
+
+
 fn get_db_credentials() -> String{
     // Definição das variáveis
         let mut db_adress = String::new();
@@ -100,4 +109,5 @@ fn application_menu()  -> i8 {
         let answer = read!();
     // Retornando a opção selecionada
         answer
-} // Return a selected option
+}
+// Return a selected option
